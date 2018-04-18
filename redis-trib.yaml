@@ -6,7 +6,7 @@ data:
   entrypoint.sh: |
     #!/bin/sh
     echo "getting curl and dig"
-    apk --update add curl bind-tools
+    apk --update --no-cache add curl bind-tools
     echo "getting redis-trib.rb"
     curl -o /tmp/redis-trib.rb download.redis.io/redis-stable/src/redis-trib.rb
     echo "installing redis lib"

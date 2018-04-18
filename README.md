@@ -30,3 +30,5 @@ Afterwards you can safely do a `kubectl delete -f redis-trib.yaml` to get rid of
 
 * Add persistent storage
 * Cleanup the entrypoint stuff
+
+Pull requests welcome and encouraged.
