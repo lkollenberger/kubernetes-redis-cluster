@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-trib-entrypoint
+data:
+  entrypoint.sh: |
+    #!/bin/sh
+    echo "getting curl and dig"
+    apk --update add curl bind-tools
+    echo "getting redis-trib.rb"
+    curl -o /tmp/redis-trib.rb download.redis.io/redis-stable/src/redis-trib.rb
+    echo "installing redis lib"
+    gem install redis
+    nodes=`dig +short +search redis | tr '\n' ';' | sed 's/;/:6379 /g'`
+    echo "nodes found: $nodes"
+    echo yes | ruby /tmp/redis-trib.rb create --replicas 1 $nodes
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: redis-trib
+spec:
+  template:
+    metadata:
+      labels:
+        app: redis-trib
+    spec:
+      restartPolicy: OnFailure
+      volumes:
+      - name: entrypoint-volume
+        configMap:
+          name: redis-trib-entrypoint
+      containers:
+      - name: redis-trib
+        image: ruby:2.5-alpine
+        imagePullPolicy: Always
+        command: ["/bin/sh", "-c", "cp /files/entrypoint.sh /tmp/entrypoint.sh && chmod +x /tmp/entrypoint.sh && /tmp/entrypoint.sh"]
+        volumeMounts:
+        - name: entrypoint-volume
+          mountPath: /files
+          readOnly: true        
